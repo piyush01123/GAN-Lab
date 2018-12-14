@@ -68,6 +68,7 @@ class GAN:
         self.AM = Sequential()
         self.AM.add(self.G)
         self.AM.add(self.D)
+        print(self.AM.summary())
         opt = RMSprop(lr=0.0001, decay=3e-8)
         self.AM.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
 
