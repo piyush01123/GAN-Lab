@@ -3,6 +3,7 @@ from keras.layers import *
 from keras.optimizers import RMSprop
 from keras.datasets import mnist
 import numpy as np
+from PIL import Image
 
 class GAN:
     def __init__(self):
@@ -94,6 +95,18 @@ class GAN:
             log_mesg = "%d: [D loss: %f, acc: %f]" % (i, d_loss[0], d_loss[1])
             log_mesg = "%s  [A loss: %f, acc: %f]" % (log_mesg, a_loss[0], a_loss[1])
             print(log_mesg)
+
+            if i%10==0:
+                self.plot_images(i)
+
+    def plot_images(self, i, num_images = 16):
+        noise = np.random.uniform(-1.0, 1.0, size=[num_images, self.noise_dim])
+        fake_images = self.G.predict(noise)
+        fake_images = np.squeeze(fake_images)
+        for j, img in enumerate(fake_images):
+            image = Image.fromarray(img.astype('uint8'))
+            filename = "plots/iteration_%d_image%d.png" %(i, j)
+            image.save(filename)
 
 
 if __name__ == '__main__':
