@@ -3,14 +3,18 @@ This repository is a lab to create and train variants of generative adversarial 
 
 #### Training GANs
 This is how we train a GAN:
+
 Let's say we have a generator G and a discriminator D.
-For example in `example.py` we have a G which maps tensors of shape (None, 100) to (None, 28, 28, 1) and D which maps tensors of shape (None, 28, 28, 1) to (None, 1)
-G takes as input a noise vector and outputs a sample with same shape as real samples.
-D takes as input a sample and outputs the probability that the input sample is real.
+For example in `example.py` we have a G which maps tensors of shape (None, 100) to (None, 28, 28, 1) and D which maps tensors of shape (None, 28, 28, 1) to (None, 1).
 
-Then at each training step, we are teaching D to differentiate between fake and real samples and then AM (G+D) to create fake samples which are able to fool D.
+G takes as input a noise vector and outputs a sample with same shape as real samples (we call these fake samples).
+D takes as input a sample (real or fake) and outputs the probability that the input sample is real.
 
-The code for this looks like this:
+Then at each training step, we teach D to differentiate between fake and real samples and then AM (G+D) to create fake samples which are able to fool D.
+
+The idea is that with enough training, G will be able to fool D (which means we can construct real-looking samples using G.)
+
+The code for the above looks like this:
 
 ```
 # Teaching D to tell fake from real samples
