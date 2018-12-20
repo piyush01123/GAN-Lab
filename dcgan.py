@@ -5,7 +5,7 @@ from keras.datasets import mnist
 import numpy as np
 from PIL import Image
 
-class GAN:
+class DCGAN:
     def __init__(self):
         self.input_shape = 28, 28, 1
         self.dropout = 0.4
@@ -110,5 +110,5 @@ class GAN:
 
 
 if __name__ == '__main__':
-    gan = GAN()
-    gan.train()
+    dcgan = DCGAN()
+    dcgan.train()

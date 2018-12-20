@@ -6,6 +6,9 @@ from keras.datasets import mnist
 
 class exampleGAN(GAN):
     def __init__(self):
+        """
+        Instantiates an example GAN. Architecture is same as dcgan.py
+        """
         self.input_shape, self.noise_dim, self.G_lr,  self.D_lr, self.AM_lr  = (28, 28, 1), 100, .004, .008, .001
         self.dropout, self.generated_dim = 0.4, 7
         self.data = np.expand_dims(mnist.load_data()[0][0].astype('float32')/255, axis = -1)
@@ -14,6 +17,9 @@ class exampleGAN(GAN):
         super().__init__(self.G, self.D, self.data, self.noise_dim, self.G_lr,  self.D_lr, self.AM_lr)
 
     def Discr(self):
+        """
+        Discriminator for exampleGAN
+        """
         D = Sequential()
         D.add(Conv2D(filters = 64, kernel_size = 5, strides = 2, input_shape = self.input_shape,
         padding = 'same', activation = LeakyReLU(alpha=0.3)))
@@ -33,6 +39,9 @@ class exampleGAN(GAN):
         return D
 
     def Genr(self):
+        """
+        Generator for exampleGAN
+        """
         G = Sequential()
         G.add(Dense(self.generated_dim*self.generated_dim*256, input_dim = self.noise_dim))
         G.add(BatchNormalization(momentum = 0.9))
@@ -55,9 +64,12 @@ class exampleGAN(GAN):
         return G
 
 def main():
-    myGAN = exampleGAN()
-    myGAN.makeGAN()
-    myGAN.train()
+    """
+    Instantiate and train an exampleGAN
+    """
+    mygan = exampleGAN()
+    mygan.makeGAN()
+    mygan.train()
 
 if __name__ == '__main__':
     main()
