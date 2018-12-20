@@ -14,7 +14,7 @@ class GAN:
         self.batch_size = 50
         self.num_steps = 100
 
-    def Discriminaor(self):
+    def Discriminator(self):
         D = Sequential()
         D.add(Conv2D(filters = 64, kernel_size = 5, strides = 2, input_shape = self.input_shape,
         padding = 'same', activation = LeakyReLU(alpha=0.3)))
@@ -56,7 +56,7 @@ class GAN:
         return G
 
     def makeGAN(self):
-        self.D = self.Discriminaor()
+        self.D = self.Discriminator()
         print(self.D.summary())
         opt = RMSprop(lr=0.0008, clipvalue=1.0, decay=6e-8)
         self.D.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
