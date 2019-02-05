@@ -7,10 +7,9 @@ import numpy as np
 from PIL import Image
 
 class DCGAN:
-    def __init__(self):
-        (self.data, _), (_, _) = mnist.load_data()
-        self.latent_dim = 100
-        self.input_shape = None, None, 3
+    def __init__(self, latent_dim, input_shape):
+        self.latent_dim = latent_dim
+        self.input_shape = input_shape
 
     def make_generator_model(self):
         model = Sequential()
@@ -38,27 +37,24 @@ class DCGAN:
         model.add(tf.keras.layers.LeakyReLU())
         model.add(tf.keras.layers.Dropout(0.3))
         model.add(tf.keras.layers.Flatten())
-        model.add(tf.keras.layers.Dense(1))
+        model.add(tf.keras.layers.Dense(1)) #notice there's no sigmoid
         model.summary()
         return model
 
-    def make_adversarial_model(self):
-        D = self.make_discriminator_model()
-        G = self.make_generator_model()
-        AM = Sequential()
-        AM.add(G)
-        AM.add(D)
-        AM.summary()
-        return D, G, AM
-
-    def make_gan(self):
-        self.make_discriminator_model()
-        exit('EXITING')
-        self.D, self.AM, self.G = self.make_adversarial_model()
+class MNISTGAN:
+    def __init__(self, save_interval = 10):
+        (self.data, _), (_, _) = mnist.load_data()
+        self.image_size = self.data.shape[1:]
+        self.input_shape = self.image_size+(1,)
+        self.latent_dim = 100
+        self.dcgan = DCGAN(latent_dim=self.latent_dim, input_shape=self.input_shape)
+        self.discriminator = self.dcgan.make_discriminator_model()
+        self.generator = self.dcgan.make_generator_model()
+        self.save_interval = save_interval
 
     def train(self):
-        self.make_gan()
+        pass
 
 if __name__=='__main__':
-    dcgan = DCGAN()
-    dcgan.train()
+    mnistgan = MNISTGAN()
+    mnistgan.train()
