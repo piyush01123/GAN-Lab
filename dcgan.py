@@ -105,6 +105,11 @@ class DCGAN:
             if step%self.save_interval==0:
                 self.plot_images(step)
 
+        self.plot_images('final')
+        self.D.save('discriminator.h5')
+        self.G.save('generator.h5')
+        self.AM.save('adversarial.h5')
+
     def plot_images(self, step, num_images = 16):
         noise = np.random.normal(0, 1, size=[num_images, self.latent_dim])
         fake_images = self.G.predict(noise)
