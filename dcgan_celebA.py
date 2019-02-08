@@ -1,26 +1,26 @@
 
-
 from tensorflow.keras.models  import Sequential, Model
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.datasets import mnist
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
+from PIL import Image
+import glob
 
-tf.logging.set_verbosity(tf.logging.ERROR)
-
-class CycleGAN:
-    def __init__(self):
-        (self.data, _), (_, _) = mnist.load_data()
+class DCGAN_CELEB:
+    def __init__(self, img_dir='datasets/img_align_celeba/'):
+        self.img_files = np.array(glob.glob(img_dir+'*.jpg'), dtype=np.str)
+        self.num_images = len(self.img_files)
         self.latent_dim = 100
-        self.input_shape = self.data.shape[1:] + (1,)
+        self.input_shape = (218, 178, 3)
         self.batch_size = 32
         self.num_steps = 4000
-        self.save_dir = 'plots/'
-        self.save_interval=100
-        self.preprocess_data()
+        self.save_dir = 'generated/'
+        self.save_interval = 100
+        self.num_channels = 3
         self.make_gan()
+
 
     def make_generator_model(self):
         model = Sequential()
@@ -34,7 +34,17 @@ class CycleGAN:
         model.add(Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
+        model.add(Conv2DTranspose(128, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Conv2DTranspose(256, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Conv2DTranspose(512, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+        model.add(ZeroPadding2D(padding=(2,1)))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Conv2DTranspose(self.num_channels, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
         model.summary()
         model = Model(model.inputs, model.outputs)
         return model
@@ -59,6 +69,8 @@ class CycleGAN:
         model.add(Dropout(0.25))
         model.add(Flatten())
         model.add(Dense(1, activation='sigmoid'))
+
+
         model.summary()
         model = Model(model.inputs, model.outputs)
         return model
@@ -70,17 +82,19 @@ class CycleGAN:
             optimizer=optimizer,
             metrics=['accuracy']
             )
+
         self.G = self.make_generator_model()
-        z = Input(shape=(self.latent_dim, ))
-        img = self.G(z)
-        self.D.trainable = False # This is important, mention it in blog
-        validity = self.D(img)
-        self.AM = Model(z, validity)
-        self.AM.summary()
-        self.AM.compile(loss='binary_crossentropy',
-            optimizer=optimizer,
-            )
-        self.D.trainable = True # To avoid all the dirty warnings
+        # z = Input(shape=(self.latent_dim, ))
+        # img = self.G(z)
+        # self.D.trainable = False # This is important, mention it in blog
+        # validity = self.D(img)
+        # self.AM = Model(z, validity)
+        # self.AM.summary()
+        # self.AM.compile(loss='binary_crossentropy',
+        #     optimizer=optimizer,
+        #     )
+        #
+        # self.D.trainable = True # To avoid all the dirty warnings
 
 
     def train(self):
@@ -101,11 +115,8 @@ class CycleGAN:
 
             if step%self.save_interval==0:
                 self.plot_images(step)
-
         self.plot_images('final')
-        self.D.save('discriminator.h5')
-        self.G.save('generator.h5')
-        self.AM.save('adversarial.h5')
+
 
     def plot_images(self, step, num_images = 16):
         noise = np.random.normal(0, 1, size=[num_images, self.latent_dim])
@@ -114,22 +125,19 @@ class CycleGAN:
         fig, axes = plt.subplots(4, 4)
         for i, img in enumerate(fake_images):
             r, c = i//4, i%4
-            axes[r, c].imshow(img[:,:,0], cmap='gray')
+            axes[r, c].imshow(img[:,:,0], cmap='rgb')
             axes[r, c].axis('off')
         fig.savefig(self.save_dir+'step_%s.png' %step)
 
 
-    def preprocess_data(self):
-        # Scale in -1 to 1
-        self.data = self.data.astype('float32')/127.5-1
-        self.data = np.expand_dims(self.data, axis = -1)
-
     def get_real_images_batch(self):
-        idx = np.random.randint(0, self.data.shape[0], self.batch_size)
-        return self.data[idx]
-
-
+        idx = np.random.randint(0, self.num_images, self.batch_size)
+        img_files =  self.img_files[idx]
+        data =  np.array([np.array(Image.open(file).resize([28, 28], Image.BILINEAR)) for file in img_files])
+        data = data.astype('float32')/127.5-1
+        return data
 
 if __name__=='__main__':
-    dcgan = DCGAN()
-    dcgan.train()
+    tf.logging.set_verbosity(tf.logging.ERROR)
+    dcgan_celeb = DCGAN_CELEB()
+    # dcgan_celeb.train()
