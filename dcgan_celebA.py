@@ -13,7 +13,8 @@ class DCGAN_CELEB:
         self.img_files = np.array(glob.glob(img_dir+'*.jpg'), dtype=np.str)
         self.num_images = len(self.img_files)
         self.latent_dim = 100
-        self.input_shape = (218, 178, 3)
+        self.input_shape = (224, 224, 3)
+        self.image_size = [224, 224]
         self.batch_size = 32
         self.num_steps = 4000
         self.save_dir = 'generated/'
@@ -28,20 +29,19 @@ class DCGAN_CELEB:
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Reshape((7, 7, 256)))
-        model.add(Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
+        model.add(Conv2DTranspose(128, (3, 3), strides=(1, 1), padding='same', use_bias=False))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+        model.add(Conv2DTranspose(64, (3, 3), strides=(2, 2), padding='same', use_bias=False))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(128, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+        model.add(Conv2DTranspose(128, (3, 3), strides=(2, 2), padding='same', use_bias=False))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(256, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+        model.add(Conv2DTranspose(256, (3, 3), strides=(2, 2), padding='same', use_bias=False))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(512, (5, 5), strides=(2, 2), padding='same', use_bias=False))
-        model.add(ZeroPadding2D(padding=(2,1)))
+        model.add(Conv2DTranspose(512, (3, 3), strides=(2, 2), padding='same', use_bias=False))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Conv2DTranspose(self.num_channels, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
@@ -67,10 +67,12 @@ class DCGAN_CELEB:
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
+        model.add(Conv2D(512, kernel_size=3, strides=1, padding="same"))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dropout(0.25))
         model.add(Flatten())
         model.add(Dense(1, activation='sigmoid'))
-
-
         model.summary()
         model = Model(model.inputs, model.outputs)
         return model
@@ -84,17 +86,17 @@ class DCGAN_CELEB:
             )
 
         self.G = self.make_generator_model()
-        # z = Input(shape=(self.latent_dim, ))
-        # img = self.G(z)
-        # self.D.trainable = False # This is important, mention it in blog
-        # validity = self.D(img)
-        # self.AM = Model(z, validity)
-        # self.AM.summary()
-        # self.AM.compile(loss='binary_crossentropy',
-        #     optimizer=optimizer,
-        #     )
-        #
-        # self.D.trainable = True # To avoid all the dirty warnings
+        z = Input(shape=(self.latent_dim, ))
+        img = self.G(z)
+        self.D.trainable = False # This is important, mention it in blog
+        validity = self.D(img)
+        self.AM = Model(z, validity)
+        self.AM.summary()
+        self.AM.compile(loss='binary_crossentropy',
+            optimizer=optimizer,
+            )
+
+        self.D.trainable = True # To avoid all the dirty warnings
 
 
     def train(self):
@@ -125,19 +127,21 @@ class DCGAN_CELEB:
         fig, axes = plt.subplots(4, 4)
         for i, img in enumerate(fake_images):
             r, c = i//4, i%4
-            axes[r, c].imshow(img[:,:,0], cmap='rgb')
+            axes[r, c].imshow(img[:,:,0])
             axes[r, c].axis('off')
-        fig.savefig(self.save_dir+'step_%s.png' %step)
+        fig.savefig(self.save_dir+'step_%s.jpg' %step)
 
 
     def get_real_images_batch(self):
         idx = np.random.randint(0, self.num_images, self.batch_size)
-        img_files =  self.img_files[idx]
-        data =  np.array([np.array(Image.open(file).resize([28, 28], Image.BILINEAR)) for file in img_files])
+        sel_img_files =  self.img_files[idx]
+        data =  np.array([np.array(Image.open(file).resize(self.image_size, Image.BILINEAR))
+                for file in sel_img_files
+                ])
         data = data.astype('float32')/127.5-1
         return data
 
 if __name__=='__main__':
     tf.logging.set_verbosity(tf.logging.ERROR)
     dcgan_celeb = DCGAN_CELEB()
-    # dcgan_celeb.train()
+    dcgan_celeb.train()
