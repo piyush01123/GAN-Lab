@@ -13,7 +13,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--num-steps',
                         type=int,
-                        default=4000,
+                        default=40000,
                         required=False,
                         help='Number of steps or epochs to train'
                         )
@@ -44,7 +44,8 @@ def get_args():
 
 
 def train_and_evaluate(hparams):
-    dcgan = model.DCGAN(num_steps=hparams.num_steps,
+    utils.download_dataset()
+    dcgan = model.DCGAN_CELEB(num_steps=hparams.num_steps,
                         save_dir=hparams.save_dir,
                         save_interval=hparams.save_interval,
                         batch_size=hparams.batch_size

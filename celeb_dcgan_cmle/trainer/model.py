@@ -2,24 +2,31 @@
 from tensorflow.keras.models  import Sequential, Model
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import Adam
-import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 from PIL import Image
 import glob
 from . import utils
 
+import matplotlib as mpl
+f = open(mpl.matplotlib_fname(),'w')
+f.write('backend : Agg')
+f.close()
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+
 class DCGAN_CELEB:
-    def __init__(self, img_dir='datasets/img_align_celeba/'):
+    def __init__(self, num_steps, save_dir, save_interval, batch_size, img_dir='img_align_celeba/'):
         self.img_files = np.array(glob.glob(img_dir+'*.jpg'), dtype=np.str)
         self.num_images = len(self.img_files)
         self.latent_dim = 100
         self.input_shape = (224, 224, 3)
         self.image_size = [224, 224]
-        self.batch_size = 32
-        self.num_steps = 4000
-        self.save_dir = 'generated/'
-        self.save_interval = 100
+        self.batch_size = batch_size
+        self.num_steps = num_steps
+        self.save_dir = save_dir
+        self.save_interval = save_interval
         self.num_channels = 3
         self.make_gan()
 
@@ -146,9 +153,3 @@ class DCGAN_CELEB:
                 ])
         data = data.astype('float32')/127.5-1
         return data
-
-if __name__=='__main__':
-    utils.download_dataset()
-    tf.logging.set_verbosity(tf.logging.ERROR)
-    dcgan_celeb = DCGAN_CELEB()
-    dcgan_celeb.train()

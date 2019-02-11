@@ -2,3 +2,4 @@ tensorflow==1.12
 setuptools==39.1.0
 matplotlib==2.2.2
 kaggle==1.5.0
+Pillow==5.1.0
