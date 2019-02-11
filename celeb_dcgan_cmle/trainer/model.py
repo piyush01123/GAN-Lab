@@ -12,7 +12,7 @@ import matplotlib as mpl
 f = open(mpl.matplotlib_fname(),'w')
 f.write('backend : Agg')
 f.close()
-matplotlib.use('Agg')
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 
