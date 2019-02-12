@@ -8,6 +8,8 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 import glob
+import imageio
+
 
 class DCGAN_CELEB:
     def __init__(self, img_dir='datasets/img_align_celeba/'):
@@ -123,43 +125,44 @@ class DCGAN_CELEB:
 
 
     def train(self):
-        valids = np.zeros((self.batch_size, 1))
-        fakes = np.ones((self.batch_size, 1))
-        for step in range(self.num_steps):
-            images_real = self.get_real_images_batch(batch_size=self.batch_size)
-            d_loss_real = self.D.train_on_batch(images_real, valids)
-            noise = np.random.normal(0, 1, size=[self.batch_size, self.latent_dim])
-            images_fake = self.G.predict(noise)
-            d_loss_fake = self.D.train_on_batch(images_fake, fakes)
-            d_loss, d_acc = 0.5*np.add(d_loss_real, d_loss_fake)
-
-            g_loss, g_acc = self.AM.train_on_batch(noise, valids)
-
-            loss_msg = {'Step': step, 'D_loss': d_loss, 'D_acc': 100*d_acc, 'G_loss': g_loss, 'G_acc': 100*g_acc}
-            print(loss_msg)
-
-            #Adding to Tensorboard
-            D_loss_summ = tf.Summary(value=[tf.Summary.Value(tag='D_Loss',
-                                                     simple_value=d_loss)])
-            D_acc_summ = tf.Summary(value=[tf.Summary.Value(tag='D_Acc',
-                                                     simple_value=d_acc)])
-            G_loss_summ = tf.Summary(value=[tf.Summary.Value(tag='G_Loss',
-                                                     simple_value=g_loss)])
-            G_acc_summ = tf.Summary(value=[tf.Summary.Value(tag='G_Acc',
-                                                     simple_value=g_acc)])
-            for summary in [D_loss_summ, D_acc_summ, G_loss_summ, G_acc_summ]:
-                self.summary_writer.add_summary(summary, step)
-
-            # Generating and saving images
-            if step%self.save_interval==0:
-                self.plot_images(step)
-                self.G.save(self.checkpoint_dir+'G_step_%s.h5' %step)
-                self.D.save(self.checkpoint_dir+'D_step_%s.h5' %step)
-
-        # Final state of G and D and saving images for final model
-        self.plot_images(step)
-        self.G.save(self.checkpoint_dir+'G_final.h5')
-        self.D.save(self.checkpoint_dir+'D_final.h5')
+        # valids = np.zeros((self.batch_size, 1))
+        # fakes = np.ones((self.batch_size, 1))
+        # for step in range(self.num_steps):
+        #     images_real = self.get_real_images_batch(batch_size=self.batch_size)
+        #     d_loss_real = self.D.train_on_batch(images_real, valids)
+        #     noise = np.random.normal(0, 1, size=[self.batch_size, self.latent_dim])
+        #     images_fake = self.G.predict(noise)
+        #     d_loss_fake = self.D.train_on_batch(images_fake, fakes)
+        #     d_loss, d_acc = 0.5*np.add(d_loss_real, d_loss_fake)
+        #
+        #     g_loss, g_acc = self.AM.train_on_batch(noise, valids)
+        #
+        #     loss_msg = {'Step': step, 'D_loss': d_loss, 'D_acc': 100*d_acc, 'G_loss': g_loss, 'G_acc': 100*g_acc}
+        #     print(loss_msg)
+        #
+        #     #Adding to Tensorboard
+        #     D_loss_summ = tf.Summary(value=[tf.Summary.Value(tag='D_Loss',
+        #                                              simple_value=d_loss)])
+        #     D_acc_summ = tf.Summary(value=[tf.Summary.Value(tag='D_Acc',
+        #                                              simple_value=d_acc)])
+        #     G_loss_summ = tf.Summary(value=[tf.Summary.Value(tag='G_Loss',
+        #                                              simple_value=g_loss)])
+        #     G_acc_summ = tf.Summary(value=[tf.Summary.Value(tag='G_Acc',
+        #                                              simple_value=g_acc)])
+        #     for summary in [D_loss_summ, D_acc_summ, G_loss_summ, G_acc_summ]:
+        #         self.summary_writer.add_summary(summary, step)
+        #
+        #     # Generating and saving images
+        #     if step%self.save_interval==0:
+        #         self.plot_images(step)
+        #         self.G.save(self.checkpoint_dir+'G_step_%s.h5' %step)
+        #         self.D.save(self.checkpoint_dir+'D_step_%s.h5' %step)
+        #
+        # # Final state of G and D and saving images for final model
+        # self.plot_images(step)
+        # self.G.save(self.checkpoint_dir+'G_final.h5')
+        # self.D.save(self.checkpoint_dir+'D_final.h5')
+        self.create_progression_gif()
 
 
     def plot_images(self, step, num_images = 16):
@@ -183,6 +186,16 @@ class DCGAN_CELEB:
         data = data.astype('float32')/127.5-1
         return data
 
+
+    def create_progression_gif(self):
+        with imageio.get_writer(self.save_dir+'progression.gif', mode='I') as writer:
+            filenames = glob.glob(self.save_dir+'step_*.jpg')
+            filenames = sorted(filenames, key = lambda k: int(k[15:-4]))
+            for filename in filenames:
+                image = imageio.imread(filename)
+                writer.append_data(image)
+
+
 class Test:
     def test_plot(self):
         dcgan_celeb = DCGAN_CELEB()
@@ -197,7 +210,6 @@ class Test:
             fig.savefig('tests/test_img_%s.jpg' %num)
 
     def test_gif(self):
-        import imageio
         with imageio.get_writer('generated/progression.gif', mode='I') as writer:
             filenames = glob.glob('generated/step_*.jpg')
             filenames = sorted(filenames, key = lambda k: int(k[15:-4]))
