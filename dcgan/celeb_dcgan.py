@@ -71,30 +71,6 @@ class DCGAN_CELEB:
         return model
 
 
-    # def make_discriminator_model(self):
-    #     model = Sequential()
-    #     model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.input_shape, padding="same"))
-    #     model.add(LeakyReLU(alpha=0.2))
-    #     model.add(Dropout(0.25))
-    #     model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
-    #     model.add(ZeroPadding2D(padding=((0,1),(0,1))))
-    #     model.add(BatchNormalization(momentum=0.8))
-    #     model.add(LeakyReLU(alpha=0.2))
-    #     model.add(Dropout(0.25))
-    #     model.add(Conv2D(128, kernel_size=3, strides=2, padding="same"))
-    #     model.add(BatchNormalization(momentum=0.8))
-    #     model.add(LeakyReLU(alpha=0.2))
-    #     model.add(Dropout(0.25))
-    #     model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
-    #     model.add(BatchNormalization(momentum=0.8))
-    #     model.add(LeakyReLU(alpha=0.2))
-    #     model.add(Dropout(0.25))
-    #     model.add(Flatten())
-    #     model.add(Dense(1, activation='sigmoid'))
-    #     model.summary()
-    #     model = Model(model.inputs, model.outputs)
-    #     return model
-
     def make_discriminator_model(self):
         model = Sequential()
         model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.input_shape, padding="same"))
@@ -123,7 +99,7 @@ class DCGAN_CELEB:
     def make_gan(self):
         optimizer = Adam(0.0002, 0.5)
         self.D = self.make_discriminator_model()
-        self.D.compile(loss='binary_crossentropy',
+        self.D.compile(loss='mse',
             optimizer=optimizer,
             metrics=['accuracy']
             )
@@ -135,8 +111,9 @@ class DCGAN_CELEB:
         validity = self.D(img)
         self.AM = Model(z, validity)
         self.AM.summary()
-        self.AM.compile(loss='binary_crossentropy',
+        self.AM.compile(loss='mse',
             optimizer=optimizer,
+            metrics=['accuracy']
             )
 
         self.D.trainable = True # To avoid all the dirty warnings
@@ -153,9 +130,9 @@ class DCGAN_CELEB:
             d_loss_fake = self.D.train_on_batch(images_fake, fakes)
             d_loss, d_acc = 0.5*np.add(d_loss_real, d_loss_fake)
 
-            g_loss = self.AM.train_on_batch(noise, valids)
+            g_loss, g_acc = self.AM.train_on_batch(noise, valids)
 
-            loss_msg = {'Step': step, 'D_loss': d_loss, 'D_acc': 100*d_acc, 'G_loss': g_loss}
+            loss_msg = {'Step': step, 'D_loss': d_loss, 'D_acc': 100*d_acc, 'G_loss': g_loss, 'G_acc': g_acc}
             print(loss_msg)
 
             if step%self.save_interval==0:
@@ -172,7 +149,7 @@ class DCGAN_CELEB:
         fig, axes = plt.subplots(4, 4)
         for i, img in enumerate(fake_images):
             r, c = i//4, i%4
-            axes[r, c].imshow(img[:,:,0])
+            axes[r, c].imshow(img)
             axes[r, c].axis('off')
         fig.savefig(self.save_dir+'step_%s.jpg' %step)
 
@@ -199,11 +176,14 @@ class Test:
                 axes[r, c].axis('off')
             fig.savefig('tests/test_img_%s.jpg' %num)
 
-
-if __name__=='__main__':
+def test():
     test = Test()
     test.test_plot()
 
-    # tf.logging.set_verbosity(tf.logging.ERROR)
-    # dcgan_celeb = DCGAN_CELEB()
-    # dcgan_celeb.train()
+def main(argv=None):
+    tf.logging.set_verbosity(tf.logging.ERROR)
+    dcgan_celeb = DCGAN_CELEB()
+    dcgan_celeb.train()
+
+if __name__=='__main__':
+    tf.app.run()
