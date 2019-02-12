@@ -2,6 +2,7 @@
 from tensorflow.keras.models  import Sequential, Model
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras import backend as K
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
@@ -23,6 +24,7 @@ class DCGAN_CELEB:
         self.save_interval = 100
         self.num_channels = 3
         self.logdir = 'logs/'
+        self.summary_writer = tf.summary.FileWriter(self.logdir)
         self.checkpoint_dir = 'checkpoints/'
         self.make_gan()
 
@@ -130,16 +132,26 @@ class DCGAN_CELEB:
             images_fake = self.G.predict(noise)
             d_loss_fake = self.D.train_on_batch(images_fake, fakes)
             d_loss, d_acc = 0.5*np.add(d_loss_real, d_loss_fake)
+            tf.summary.scalar('D_Loss', d_loss)
+            tf.summary.scalar('D_acc', d_acc)
 
             g_loss, g_acc = self.AM.train_on_batch(noise, valids)
+            tf.summary.scalar('G_Loss', g_loss)
+            tf.summary.scalar('G_acc', g_acc)
 
             loss_msg = {'Step': step, 'D_loss': d_loss, 'D_acc': 100*d_acc, 'G_loss': g_loss, 'G_acc': g_acc}
             print(loss_msg)
+
+            merged = tf.summary.merge_all()
+            sess = K.get_session()
+            summary = sess.run(merged)
+            self.summary_writer.add_summary(summary)
 
             if step%self.save_interval==0:
                 self.plot_images(step)
                 self.G.save(self.checkpoint_dir+'G_step_%s.h5' %step)
                 self.D.save(self.checkpoint_dir+'D_step_%s.h5' %step)
+
         self.plot_images('final')
         self.G.save(self.checkpoint_dir+'G_final.h5')
         self.D.save(self.checkpoint_dir+'D_final.h5')
