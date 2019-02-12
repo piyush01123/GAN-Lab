@@ -22,6 +22,7 @@ class DCGAN_CELEB:
         self.save_dir = 'generated/'
         self.save_interval = 100
         self.num_channels = 3
+        self.logdir = 'logs/'
         self.make_gan()
 
 
@@ -70,6 +71,30 @@ class DCGAN_CELEB:
         return model
 
 
+    # def make_discriminator_model(self):
+    #     model = Sequential()
+    #     model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.input_shape, padding="same"))
+    #     model.add(LeakyReLU(alpha=0.2))
+    #     model.add(Dropout(0.25))
+    #     model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
+    #     model.add(ZeroPadding2D(padding=((0,1),(0,1))))
+    #     model.add(BatchNormalization(momentum=0.8))
+    #     model.add(LeakyReLU(alpha=0.2))
+    #     model.add(Dropout(0.25))
+    #     model.add(Conv2D(128, kernel_size=3, strides=2, padding="same"))
+    #     model.add(BatchNormalization(momentum=0.8))
+    #     model.add(LeakyReLU(alpha=0.2))
+    #     model.add(Dropout(0.25))
+    #     model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
+    #     model.add(BatchNormalization(momentum=0.8))
+    #     model.add(LeakyReLU(alpha=0.2))
+    #     model.add(Dropout(0.25))
+    #     model.add(Flatten())
+    #     model.add(Dense(1, activation='sigmoid'))
+    #     model.summary()
+    #     model = Model(model.inputs, model.outputs)
+    #     return model
+
     def make_discriminator_model(self):
         model = Sequential()
         model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.input_shape, padding="same"))
@@ -93,6 +118,7 @@ class DCGAN_CELEB:
         model.summary()
         model = Model(model.inputs, model.outputs)
         return model
+
 
     def make_gan(self):
         optimizer = Adam(0.0002, 0.5)
@@ -163,20 +189,21 @@ class DCGAN_CELEB:
 class Test:
     def test_plot(self):
         dcgan_celeb = DCGAN_CELEB()
-        batch = dcgan_celeb.get_real_images_batch(16)
-        batch = batch*0.5 + 0.5
-        fig, axes = plt.subplots(4, 4)
-        for i, img in enumerate(batch):
-            r, c = i//4, i%4
-            axes[r, c].imshow(img)
-            axes[r, c].axis('off')
-        fig.savefig('tests/%s.jpg' %'test')
+        for num in range(10):
+            batch = dcgan_celeb.get_real_images_batch(16)
+            batch = batch*0.5 + 0.5
+            fig, axes = plt.subplots(4, 4)
+            for i, img in enumerate(batch):
+                r, c = i//4, i%4
+                axes[r, c].imshow(img)
+                axes[r, c].axis('off')
+            fig.savefig('tests/test_img_%s.jpg' %num)
 
 
 if __name__=='__main__':
     test = Test()
     test.test_plot()
 
-    tf.logging.set_verbosity(tf.logging.ERROR)
-    dcgan_celeb = DCGAN_CELEB()
-    dcgan_celeb.train()
+    # tf.logging.set_verbosity(tf.logging.ERROR)
+    # dcgan_celeb = DCGAN_CELEB()
+    # dcgan_celeb.train()
