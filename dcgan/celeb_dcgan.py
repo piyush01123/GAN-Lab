@@ -132,26 +132,31 @@ class DCGAN_CELEB:
             images_fake = self.G.predict(noise)
             d_loss_fake = self.D.train_on_batch(images_fake, fakes)
             d_loss, d_acc = 0.5*np.add(d_loss_real, d_loss_fake)
-            tf.summary.scalar('D_Loss', d_loss)
-            tf.summary.scalar('D_acc', d_acc)
 
             g_loss, g_acc = self.AM.train_on_batch(noise, valids)
-            tf.summary.scalar('G_Loss', g_loss)
-            tf.summary.scalar('G_acc', g_acc)
 
             loss_msg = {'Step': step, 'D_loss': d_loss, 'D_acc': 100*d_acc, 'G_loss': g_loss, 'G_acc': g_acc}
             print(loss_msg)
 
-            merged = tf.summary.merge_all()
-            sess = K.get_session()
-            summary = sess.run(merged)
-            self.summary_writer.add_summary(summary)
+            #Adding to Tensorboard
+            D_loss_summ = tf.Summary(value=[tf.Summary.Value(tag='D_Loss',
+                                                     simple_value=d_loss)])
+            D_acc_summ = tf.Summary(value=[tf.Summary.Value(tag='D_Acc',
+                                                     simple_value=d_acc)])
+            G_loss_summ = tf.Summary(value=[tf.Summary.Value(tag='G_Loss',
+                                                     simple_value=g_loss)])
+            G_acc_summ = tf.Summary(value=[tf.Summary.Value(tag='G_Acc',
+                                                     simple_value=g_acc)])
+            for summary in [D_loss_summ, D_acc_summ, G_loss_summ, G_acc_summ]:
+                self.summary_writer.add_summary(summary, step)
 
+            # Generating and saving images
             if step%self.save_interval==0:
                 self.plot_images(step)
                 self.G.save(self.checkpoint_dir+'G_step_%s.h5' %step)
                 self.D.save(self.checkpoint_dir+'D_step_%s.h5' %step)
 
+        # Final state of G and D and saving images for final model
         self.plot_images('final')
         self.G.save(self.checkpoint_dir+'G_final.h5')
         self.D.save(self.checkpoint_dir+'D_final.h5')
