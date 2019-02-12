@@ -23,6 +23,7 @@ class DCGAN_CELEB:
         self.save_interval = 100
         self.num_channels = 3
         self.logdir = 'logs/'
+        self.checkpoint_dir = 'checkpoints/'
         self.make_gan()
 
 
@@ -137,9 +138,11 @@ class DCGAN_CELEB:
 
             if step%self.save_interval==0:
                 self.plot_images(step)
-                self.G.save('checkpoints/G_step_%s.h5' %step)
-                self.D.save('checkpoints/D_step_%s.h5' %step)
+                self.G.save(self.checkpoint_dir+'G_step_%s.h5' %step)
+                self.D.save(self.checkpoint_dir+'D_step_%s.h5' %step)
         self.plot_images('final')
+        self.G.save(self.checkpoint_dir+'G_final.h5')
+        self.D.save(self.checkpoint_dir+'D_final.h5')
 
 
     def plot_images(self, step, num_images = 16):
