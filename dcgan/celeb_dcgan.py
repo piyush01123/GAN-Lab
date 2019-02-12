@@ -135,7 +135,7 @@ class DCGAN_CELEB:
 
             g_loss, g_acc = self.AM.train_on_batch(noise, valids)
 
-            loss_msg = {'Step': step, 'D_loss': d_loss, 'D_acc': 100*d_acc, 'G_loss': g_loss, 'G_acc': g_acc}
+            loss_msg = {'Step': step, 'D_loss': d_loss, 'D_acc': 100*d_acc, 'G_loss': g_loss, 'G_acc': 100*g_acc}
             print(loss_msg)
 
             #Adding to Tensorboard
@@ -157,7 +157,7 @@ class DCGAN_CELEB:
                 self.D.save(self.checkpoint_dir+'D_step_%s.h5' %step)
 
         # Final state of G and D and saving images for final model
-        self.plot_images('final')
+        self.plot_images(step)
         self.G.save(self.checkpoint_dir+'G_final.h5')
         self.D.save(self.checkpoint_dir+'D_final.h5')
 
@@ -196,9 +196,19 @@ class Test:
                 axes[r, c].axis('off')
             fig.savefig('tests/test_img_%s.jpg' %num)
 
+    def test_gif(self):
+        import imageio
+        with imageio.get_writer('generated/progression.gif', mode='I') as writer:
+            filenames = glob.glob('generated/step_*.jpg')
+            filenames = sorted(filenames, key = lambda k: int(k[15:-4]))
+            for filename in filenames:
+                image = imageio.imread(filename)
+                writer.append_data(image)
+
 def test():
     test = Test()
     test.test_plot()
+    test.test_gif()
 
 def main(argv=None):
     tf.logging.set_verbosity(tf.logging.ERROR)
@@ -206,4 +216,5 @@ def main(argv=None):
     dcgan_celeb.train()
 
 if __name__=='__main__':
-    tf.app.run()
+    test()
+    # tf.app.run()
