@@ -120,7 +120,7 @@ class DCGAN_CELEB:
         valids = np.zeros((self.batch_size, 1))
         fakes = np.ones((self.batch_size, 1))
         for step in range(self.num_steps):
-            images_real = self.get_real_images_batch()
+            images_real = self.get_real_images_batch(batch_size=self.batch_size)
             d_loss_real = self.D.train_on_batch(images_real, valids)
             noise = np.random.normal(0, 1, size=[self.batch_size, self.latent_dim])
             images_fake = self.G.predict(noise)
@@ -151,8 +151,8 @@ class DCGAN_CELEB:
         fig.savefig(self.save_dir+'step_%s.jpg' %step)
 
 
-    def get_real_images_batch(self):
-        idx = np.random.randint(0, self.num_images, self.batch_size)
+    def get_real_images_batch(self, batch_size):
+        idx = np.random.randint(0, self.num_images, batch_size)
         sel_img_files =  self.img_files[idx]
         data =  np.array([np.array(Image.open(file).resize(self.image_size, Image.BILINEAR))
                 for file in sel_img_files
@@ -160,7 +160,23 @@ class DCGAN_CELEB:
         data = data.astype('float32')/127.5-1
         return data
 
+class Test:
+    def test_plot(self):
+        dcgan_celeb = DCGAN_CELEB()
+        batch = dcgan_celeb.get_real_images_batch(16)
+        batch = batch*0.5 + 0.5
+        fig, axes = plt.subplots(4, 4)
+        for i, img in enumerate(batch):
+            r, c = i//4, i%4
+            axes[r, c].imshow(img)
+            axes[r, c].axis('off')
+        fig.savefig('tests/%s.jpg' %'test')
+
+
 if __name__=='__main__':
+    test = Test()
+    test.test_plot()
+
     tf.logging.set_verbosity(tf.logging.ERROR)
     dcgan_celeb = DCGAN_CELEB()
     dcgan_celeb.train()
