@@ -13,17 +13,19 @@ class DCGAN_CELEB:
         self.img_files = np.array(glob.glob(img_dir+'*.jpg'), dtype=np.str)
         self.num_images = len(self.img_files)
         self.latent_dim = 100
-        self.input_shape = (224, 224, 3)
-        self.image_size = [224, 224]
-        self.batch_size = 32
-        self.num_steps = 40000
+        # self.input_shape = (224, 224, 3)
+        # self.image_size = [224, 224]
+        self.input_shape = (28, 28, 3)
+        self.image_size = [28, 28]
+        self.batch_size = 50
+        self.num_steps = 4000
         self.save_dir = 'generated/'
         self.save_interval = 100
         self.num_channels = 3
         self.make_gan()
 
 
-    def make_generator_model(self):
+    # def make_generator_model(self):
         # model = Sequential()
         # model.add(Dense(7*7*256, use_bias=False, input_shape=(self.latent_dim,)))
         # model.add(BatchNormalization(momentum=0.8))
@@ -46,6 +48,11 @@ class DCGAN_CELEB:
         # model.add(LeakyReLU(alpha=0.2))
         # model.add(Conv2DTranspose(self.num_channels, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
         # model.summary()
+        # model = Model(model.inputs, model.outputs)
+        # return model
+
+
+    def make_generator_model(self):
         model = Sequential()
         model.add(Dense(7*7*256, use_bias=False, input_shape=(self.latent_dim,)))
         model.add(BatchNormalization(momentum=0.8))
