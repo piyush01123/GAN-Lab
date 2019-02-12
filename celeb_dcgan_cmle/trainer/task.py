@@ -50,7 +50,7 @@ def train_and_evaluate(hparams):
                         save_interval=hparams.save_interval,
                         batch_size=hparams.batch_size
                         )
-    dcgan.train()
+    # dcgan.train()
 
 
 if __name__ == '__main__':

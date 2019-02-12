@@ -49,7 +49,25 @@ class CycleGAN:
         self.GAN_AA.compile(loss=loss_tensor, )
 
     def train(self):
+        valid = np.ones((self.batch_size, 1))
+        fake = np.zeros((self.batch_size, 1))
         for step in range(num_steps):
+            real_a = self.get_real_images_batch(self.dataset_A)
+            real_b = self.get_real_images_batch(self.dataset_B)
+            fake_b = self.G_AB.predict(real_a)
+            fake_a = self.G_BA.predict(real_b)
+
+            loss_D_B_real = self.D_B.train_on_batch(real_b, valid)
+            loss_D_B_fake = self.D_B.train_on_batch(fake_b, fake)
+            loss_D_B = 0.5*np.add(loss_D_B_real, loss_D_B_fake)
+
+            loss_D_A_real = self.D_A.train_on_batch(real_a, valid)
+            loss_D_A_fake = self.D_A.train_on_batch(fake_a, fake)
+            loss_D_A = 0.5*np.add(loss_D_A_real, loss_D_A_fake)
+
+            self.GAN_AA
+
+
 
 
     def save_images(self):

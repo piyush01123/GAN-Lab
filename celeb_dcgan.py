@@ -16,7 +16,7 @@ class DCGAN_CELEB:
         self.input_shape = (224, 224, 3)
         self.image_size = [224, 224]
         self.batch_size = 32
-        self.num_steps = 4000
+        self.num_steps = 40000
         self.save_dir = 'generated/'
         self.save_interval = 100
         self.num_channels = 3
@@ -24,30 +24,44 @@ class DCGAN_CELEB:
 
 
     def make_generator_model(self):
+        # model = Sequential()
+        # model.add(Dense(7*7*256, use_bias=False, input_shape=(self.latent_dim,)))
+        # model.add(BatchNormalization(momentum=0.8))
+        # model.add(LeakyReLU(alpha=0.2))
+        # model.add(Reshape((7, 7, 256)))
+        # model.add(Conv2DTranspose(128, (3, 3), strides=(1, 1), padding='same', use_bias=False))
+        # model.add(BatchNormalization(momentum=0.8))
+        # model.add(LeakyReLU(alpha=0.2))
+        # model.add(Conv2DTranspose(64, (3, 3), strides=(2, 2), padding='same', use_bias=False))
+        # model.add(BatchNormalization(momentum=0.8))
+        # model.add(LeakyReLU(alpha=0.2))
+        # model.add(Conv2DTranspose(128, (3, 3), strides=(2, 2), padding='same', use_bias=False))
+        # model.add(BatchNormalization(momentum=0.8))
+        # model.add(LeakyReLU(alpha=0.2))
+        # model.add(Conv2DTranspose(256, (3, 3), strides=(2, 2), padding='same', use_bias=False))
+        # model.add(BatchNormalization(momentum=0.8))
+        # model.add(LeakyReLU(alpha=0.2))
+        # model.add(Conv2DTranspose(512, (3, 3), strides=(2, 2), padding='same', use_bias=False))
+        # model.add(BatchNormalization(momentum=0.8))
+        # model.add(LeakyReLU(alpha=0.2))
+        # model.add(Conv2DTranspose(self.num_channels, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
+        # model.summary()
         model = Sequential()
         model.add(Dense(7*7*256, use_bias=False, input_shape=(self.latent_dim,)))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Reshape((7, 7, 256)))
-        model.add(Conv2DTranspose(128, (3, 3), strides=(1, 1), padding='same', use_bias=False))
+        model.add(Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(64, (3, 3), strides=(2, 2), padding='same', use_bias=False))
-        model.add(BatchNormalization(momentum=0.8))
-        model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(128, (3, 3), strides=(2, 2), padding='same', use_bias=False))
-        model.add(BatchNormalization(momentum=0.8))
-        model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(256, (3, 3), strides=(2, 2), padding='same', use_bias=False))
-        model.add(BatchNormalization(momentum=0.8))
-        model.add(LeakyReLU(alpha=0.2))
-        model.add(Conv2DTranspose(512, (3, 3), strides=(2, 2), padding='same', use_bias=False))
+        model.add(Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Conv2DTranspose(self.num_channels, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
         model.summary()
         model = Model(model.inputs, model.outputs)
         return model
+
 
     def make_discriminator_model(self):
         model = Sequential()
@@ -64,10 +78,6 @@ class DCGAN_CELEB:
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
         model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
-        model.add(BatchNormalization(momentum=0.8))
-        model.add(LeakyReLU(alpha=0.2))
-        model.add(Dropout(0.25))
-        model.add(Conv2D(512, kernel_size=3, strides=1, padding="same"))
         model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
@@ -100,8 +110,8 @@ class DCGAN_CELEB:
 
 
     def train(self):
-        valids = np.ones((self.batch_size, 1))
-        fakes = np.zeros((self.batch_size, 1))
+        valids = np.zeros((self.batch_size, 1))
+        fakes = np.ones((self.batch_size, 1))
         for step in range(self.num_steps):
             images_real = self.get_real_images_batch()
             d_loss_real = self.D.train_on_batch(images_real, valids)
@@ -117,6 +127,8 @@ class DCGAN_CELEB:
 
             if step%self.save_interval==0:
                 self.plot_images(step)
+                self.G.save('checkpoints/G_step_%s.h5' %step)
+                self.D.save('checkpoints/D_step_%s.h5' %step)
         self.plot_images('final')
 
 
