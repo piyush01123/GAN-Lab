@@ -4,7 +4,9 @@
 This repository is a lab to learn about and train variants of generative adversarial networks or GANs. Most of the code is written in Keras with Tensorflow backend. There are also examples of training GANs of Cloud ML Engine.
 
 #### Why learn GANs?
-Mostly because they are capable of learning (even complex) data distributions and generate (fake) samples from that distribution. For example: <img src='dcgan/generated/progression.gif'/>
+GANs are interesting because they are capable of learning even complex data distributions and generate (fake) samples from that distribution. For example:
+
+<img src='dcgan/generated/progression.gif'/>
 
 #### How to train GANs
 
@@ -12,12 +14,13 @@ The basic framework consists of 2 neural networks:
 - G or Generator and
 - D or Discriminator
 
-G takes as input a noise vector and outputs a sample with same shape as real samples (we call these fake samples). D takes as input a sample (real or fake) and outputs the probability that the input sample is real. Mathematically, G and D are playing a mini-max game for a value function V:
-$$\min_D \max_G V(D, G) = E_{x \sim X}log(D(x)) + E_{z \sim Z}log(1-D(G(z)))$$
+G takes as input a noise vector and outputs a sample with same shape as real samples (we call these fake samples). D takes as input a sample (real or fake) and outputs the probability that the input sample is real. Mathematically, G and D are playing a min-max game for a value function V:
+
+<p align="center"><img alt="$$&#10;\min_D \max_G V(D, G) = E_{x \sim X}log(D(x)) + E_{z \sim Z}log(1-D(G(z)))&#10;$$" src="svgs/676b972e9b7f5ce75615351cf625f11d.svg" align="middle" width="442.21943865pt" height="22.931502pt"/></p>
 
 Above equation implies that D tries to minimize `V(D, G)` and G tries to maximize `V(D, G)`. Also the `log` in the above equation can be modified to things like mean-squared error as in LSGAN. The above formulation is for the binary-crossentropy loss.
 
-In practice, we dont construct a single value function and simultaneously train two optimizers to minimize/maximize it. Rather, we construct G and D. Then at each training step, we teach D to differentiate between fake and real samples and then AM or Adversarial Model (G+D) to create fake samples which are able to fool D. Also, D should be set to non-trainable while training G.
+In practice, we first construct G, D and AM or Adversarial Model (D stacked on top of G) and then at each training step, we teach D to differentiate between fake and real samples and simultaneously we teach AM to generate fake samples which are able to fool D. Also, D should be set to non-trainable in the 2nd part.
 
 The idea is that with enough training, G will be able to fool D (which means we can construct real-looking samples using G.)
 
