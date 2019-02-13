@@ -62,7 +62,7 @@ Y = np.ones((batch_size, 1))
 # Train AM (G+D) on this batch of noise and Y
 a_loss = AM.train_on_batch(noise, Y)
 ```
-Above steps are repeated for a pre-specified number of steps and after enough steps, G
+Above steps are repeated for a pre-specified number of steps and after enough steps, G will be able to generate samples visually indistinguishable from actual images.
 
 <!-- #### The GAN Class
 I have created a `GAN` class in `gan.py` which takes in its constructor, a generator and a discriminator as arguments.
