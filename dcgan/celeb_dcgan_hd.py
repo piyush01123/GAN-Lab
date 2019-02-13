@@ -237,7 +237,7 @@ class Test:
                 r, c = i//4, i%4
                 axes[r, c].imshow(img)
                 axes[r, c].axis('off')
-            fig.savefig('tests/test_img_%s.jpg' %num)
+            fig.savefig('tests/test_img_hd_%s.jpg' %num)
 
 def test():
     test = Test()
