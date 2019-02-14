@@ -6,4 +6,3 @@ logs_hd/
 mnist/
 datasets/
 *.ipynb
-download_celeb_data.sh
