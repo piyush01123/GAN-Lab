@@ -1,6 +1,6 @@
 
-fromt tensorflow.keras.layers import *
-fromt tensorflow.keras.models import *
+from tensorflow.keras.layers import *
+from tensorflow.keras.models import Sequential, Model
 
 class CycleGAN:
     def __init__(self):
