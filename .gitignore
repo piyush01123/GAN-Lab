@@ -8,3 +8,4 @@ datasets/
 *.ipynb
 venv/
 *.png
+*.jpg
