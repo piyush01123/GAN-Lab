@@ -6,3 +6,5 @@ logs_hd/
 mnist/
 datasets/
 *.ipynb
+venv/
+*.png
