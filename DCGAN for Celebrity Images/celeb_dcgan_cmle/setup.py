@@ -2,7 +2,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-REQUIRED_PACKAGES = ['requests==2.19.1', 'tensorflow==1.12.0', 'matplotlib==2.2.2', 'kaggle==1.5.0', 'Pillow==5.1.0', 'urllib3==1.22']
+REQUIRED_PACKAGES = ['requests==2.19.1', 'tensorflow==2.5.1', 'matplotlib==2.2.2', 'kaggle==1.5.0', 'Pillow==5.1.0', 'urllib3==1.22']
 
 setup(name='celeb_face_generator',
       version='4.0',
